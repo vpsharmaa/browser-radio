@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Accessible Community Radio</title>
+
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        line-height: 1.5;
+        margin: 20px;
+        max-width: 900px;
+    }
+
+    h1, h2 {
+        margin-bottom: 10px;
+    }
+
+    section {
+        margin-top: 24px;
+        padding-top: 10px;
+        border-top: 1px solid #999;
+    }
+
+    label {
+        display: block;
+        font-weight: bold;
+        margin-top: 12px;
+        margin-bottom: 5px;
+    }
+
+    select,
+    input[type="text"],
+    input[type="range"],
+    button {
+        font-size: 1rem;
+    }
+
+    select,
+    input[type="text"] {
+        width: 100%;
+        max-width: 600px;
+        padding: 8px;
+        box-sizing: border-box;
+    }
+
+    button {
+        padding: 9px 14px;
+        margin: 6px 6px 6px 0;
+        cursor: pointer;
+    }
+
+    input[type="range"] {
+        width: 100%;
+        max-width: 500px;
+    }
+
+    .control-group {
+        margin-top: 12px;
+    }
+
+    #status {
+        font-weight: bold;
+        margin-top: 12px;
+    }
+
+    #stationInfo,
+    #searchResults,
+    #favourites {
+        margin-top: 12px;
+    }
+
+    .result-button {
+        display: block;
+        margin-bottom: 6px;
+    }
+
+    .help {
+        max-width: 800px;
+    }
+</style>
+
+<!-- HLS.js is a JavaScript library used for HLS (.m3u8) streams -->
+<script src="https://cdn.jsdelivr.net/npm/hls.js@1"></script>
+</head>
+
+<body>
+
+<h1>Accessible Community Radio</h1>
+
+<p>
+    An accessible Internet radio player with tested stations,
+    station search and favourites.
+</p>
+
+<section aria-labelledby="station-heading">
+    <h2 id="station-heading">Tested Stations</h2>
+
+    <label for="station">Select a station</label>
+
+    <select id="station">
+        <option value="">-- Select a station --</option>
+    </select>
+
+    <div class="control-group">
+        <button id="playButton" type="button">Play</button>
+        <button id="stopButton" type="button">Stop</button>
+        <button id="muteButton" type="button">Mute</button>
+    </div>
+
+    <label for="volumeControl">Volume</label>
+
+    <input
+        type="range"
+        id="volumeControl"
+        min="0"
+        max="100"
+        value="100"
+        aria-label="Volume"
+    >
+
+    <p id="status" role="status" aria-live="polite">
+        Please select a station.
+    </p>
+
+    <audio id="radioPlayer" preload="none"></audio>
+</section>
+
+<section aria-labelledby="info-heading">
+    <h2 id="info-heading">Station Information</h2>
+    <div id="stationInfo" aria-live="polite">
+        No station selected.
+    </div>
+</section>
+
+<section aria-labelledby="search-heading">
+    <h2 id="search-heading">Search Internet Radio Stations</h2>
+
+    <label for="searchName">Station name</label>
+
+    <input
+        type="text"
+        id="searchName"
+        placeholder="Example: Aaj Tak"
+    >
+
+    <button id="searchButton" type="button">Search</button>
+
+    <div id="searchResults" aria-live="polite"></div>
+</section>
+
+<section aria-labelledby="favourite-heading">
+    <h2 id="favourite-heading">Favourite Stations</h2>
+
+    <label for="favourites">Select a favourite station</label>
+
+    <select id="favourites">
+        <option value="">-- No favourites selected --</option>
+    </select>
+
+    <div>
+        <button id="addFavouriteButton" type="button">
+            Add Current Station to Favourites
+        </button>
+
+        <button id="removeFavouriteButton" type="button">
+            Remove Favourite
+        </button>
+    </div>
+</section>
+
+<section class="help" aria-labelledby="help-heading">
+    <h2 id="help-heading">How to Use This Radio</h2>
+
+    <ol>
+        <li>Select a station from the Tested Stations list.</li>
+        <li>Press Play to start the station.</li>
+        <li>Press Play again to pause and resume playback.</li>
+        <li>Press Stop to completely stop the current stream.</li>
+        <li>Use Mute to mute or unmute the sound.</li>
+        <li>Use the Volume control to change the volume.</li>
+        <li>Search for additional stations by station name.</li>
+        <li>Add a selected station to Favourites for easier access later.</li>
+    </ol>
+
+    <p>
+        Some Internet radio stations may occasionally be unavailable.
+        A station can also change or discontinue its streaming address.
+    </p>
+</section>
+
+<script>
+"use strict";
+
+/* ---------------------------------------------------------
+   Tested stations
+   --------------------------------------------------------- */
+
+const stations = [
+    {
+        name: "Vividh Bharati Delhi",
+        stream: "https://air.pc.cdn.bitgravity.com/air/live/pbaudio001/chunklist.m3u8",
+        state: "Delhi",
+        codec: "HLS / Internet Radio",
+        bitrate: "Variable",
+        source: "Our Tested Stations"
+    },
+    {
+        name: "FM Gold Delhi",
+        stream: "https://airhlspush.pc.cdn.bitgravity.com/httppush/hlspbaudio005/hlspbaudio005_Auto.m3u8",
+        state: "Delhi",
+        codec: "HLS / Internet Radio",
+        bitrate: "Variable",
+        source: "Our Tested Stations"
+    },
+    {
+        name: "FM Rainbow Delhi",
+        stream: "https://airhlspush.pc.cdn.bitgravity.com/httppush/hlspbaudio004/hlspbaudio004_Auto.m3u8",
+        state: "Delhi",
+        codec: "HLS / Internet Radio",
+        bitrate: "Variable",
+        source: "Our Tested Stations"
+    },
+    {
+        name: "Indraprastha Delhi",
+        stream: "https://airhlspush.pc.cdn.bitgravity.com/httppush/hlspbaudio006/hlspbaudio006_Auto.m3u8",
+        state: "Delhi",
+        codec: "HLS / Internet Radio",
+        bitrate: "Variable",
+        source: "Our Tested Stations"
+    },
+    {
+        name: "VBS Delhi",
+        stream: "https://airhlspush.pc.cdn.bitgravity.com/httppush/hlspbaudio238/hlspbaudio238_Auto.m3u8",
+        state: "Delhi",
+        codec: "HLS / Internet Radio",
+        bitrate: "Variable",
+        source: "Our Tested Stations"
+    },
+    {
+        name: "BIG FM",
+        stream: "https://stream-14.zeno.fm/r2gn1pgm4qruv",
+        state: "India",
+        codec: "Internet Radio",
+        bitrate: "Variable",
+        source: "Our Tested Stations"
+    }
+];
+
+/* ---------------------------------------------------------
+   Page elements
+   --------------------------------------------------------- */
+
+const stationSelect = document.getElementById("station");
+const playButton = document.getElementById("playButton");
+const stopButton = document.getElementById("stopButton");
+const muteButton = document.getElementById("muteButton");
+const volumeControl = document.getElementById("volumeControl");
+
+const radioPlayer = document.getElementById("radioPlayer");
+const status = document.getElementById("status");
+
+const searchName = document.getElementById("searchName");
+const searchButton = document.getElementById("searchButton");
+const searchResults = document.getElementById("searchResults");
+
+const favourites = document.getElementById("favourites");
+const addFavouriteButton =
+    document.getElementById("addFavouriteButton");
+const removeFavouriteButton =
+    document.getElementById("removeFavouriteButton");
+
+const stationInfo = document.getElementById("stationInfo");
+
+/* ---------------------------------------------------------
+   Variables
+   --------------------------------------------------------- */
+
+let hls = null;
+let selectedStation = null;
+let searchStations = [];
+let favouriteStations = [];
+let connectionTimer = null;
+let activeStation = null;
+let streamGeneration = 0;
+
+/* ---------------------------------------------------------
+   Populate tested stations
+   --------------------------------------------------------- */
+
+stations.forEach(function(station, index) {
+
+    const option = document.createElement("option");
+
+    option.value = index;
+    option.textContent = station.name;
+
+    stationSelect.appendChild(option);
+});
+
+/* ---------------------------------------------------------
+   Station information
+   --------------------------------------------------------- */
+
+function showStationInfo(station) {
+
+    if (!station) {
+        stationInfo.textContent = "No station selected.";
+        return;
+    }
+
+    stationInfo.innerHTML =
+        "<p><strong>Station:</strong> " +
+        escapeHtml(station.name) +
+        "</p>" +
+
+        "<p><strong>Location:</strong> " +
+        escapeHtml(station.state || "Not available") +
+        "</p>" +
+
+        "<p><strong>Codec:</strong> " +
+        escapeHtml(station.codec || "Not available") +
+        "</p>" +
+
+        "<p><strong>Bitrate:</strong> " +
+        escapeHtml(station.bitrate || "Not available") +
+        "</p>" +
+
+        "<p><strong>Source:</strong> " +
+        escapeHtml(station.source || "Not available") +
+        "</p>";
+}
+
+/* ---------------------------------------------------------
+   Small HTML escaping function
+   --------------------------------------------------------- */
+
+function escapeHtml(value) {
+
+    return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
+/* ---------------------------------------------------------
+   Stop and clean the current stream
+   --------------------------------------------------------- */
+
+function stopCurrentStream() {
+
+    streamGeneration++;
+
+    clearTimeout(connectionTimer);
+    connectionTimer = null;
+
+    if (hls) {
+        hls.destroy();
+        hls = null;
+    }
+
+    radioPlayer.pause();
+    radioPlayer.removeAttribute("src");
+    radioPlayer.load();
+    activeStation = null;
+
+    playButton.textContent = "Play";
+}
+
+/* ---------------------------------------------------------
+   Start selected station
+   --------------------------------------------------------- */
+
+function startRadio() {
+
+    if (!selectedStation || !selectedStation.stream) {
+
+        status.textContent =
+            "Please select a station first.";
+
+        return;
+    }
+
+    stopCurrentStream();
+    activeStation = selectedStation;
+    const myGeneration = streamGeneration;
+
+    const stationName = selectedStation.name;
+
+    status.textContent =
+        stationName + " is connecting...";
+
+    connectionTimer = setTimeout(function() {
+
+        if (radioPlayer.paused) {
+
+            status.textContent =
+                stationName +
+                " is taking longer to respond. Still trying...";
+        }
+
+    }, 8000);
+
+    const stream = selectedStation.stream;
+
+    if (stream.includes(".m3u8")) {
+
+        if (window.Hls && Hls.isSupported()) {
+
+            hls = new Hls();
+
+            hls.loadSource(stream);
+            hls.attachMedia(radioPlayer);
+
+            hls.on(Hls.Events.MANIFEST_PARSED, function() {
+
+                if (myGeneration !== streamGeneration || activeStation !== selectedStation) return;
+
+                radioPlayer.play().catch(function() {
+
+                    if (myGeneration !== streamGeneration || activeStation !== selectedStation) return;
+
+                    status.textContent =
+                        stationName +
+                        " could not be started.";
+                });
+            });
+
+            hls.on(Hls.Events.ERROR, function(event, data) {
+
+                if (data.fatal) {
+
+                    status.textContent =
+                        stationName +
+                        " is temporarily unavailable.";
+
+                    if (hls) {
+                        hls.destroy();
+                        hls = null;
+                    }
+
+                    playButton.textContent = "Play";
+                }
+            });
+
+        } else if (
+            radioPlayer.canPlayType(
+                "application/vnd.apple.mpegurl"
+            )
+        ) {
+
+            radioPlayer.src = stream;
+
+            radioPlayer.play().catch(function() {
+
+                status.textContent =
+                    stationName +
+                    " could not be started.";
+            });
+
+        } else {
+
+            status.textContent =
+                stationName +
+                " requires HLS support in this browser.";
+
+            playButton.textContent = "Play";
+        }
+
+    } else {
+
+        radioPlayer.src = stream;
+
+        radioPlayer.play().catch(function() {
+
+            status.textContent =
+                stationName +
+                " could not be started.";
+        });
+    }
+}
+
+/* ---------------------------------------------------------
+   Play / Pause
+   --------------------------------------------------------- */
+
+playButton.addEventListener("click", function() {
+
+    if (!selectedStation || !selectedStation.stream) {
+
+        status.textContent =
+            "Please select a station first.";
+
+        return;
+    }
+
+    // Play must always start the currently selected station.
+    // Never resume a stream belonging to an older selection.
+    if (activeStation !== selectedStation) {
+        startRadio();
+        return;
+    }
+
+    if (!radioPlayer.src && !hls) {
+        startRadio();
+        return;
+    }
+
+    if (radioPlayer.paused) {
+
+        radioPlayer.play().catch(function() {
+
+            status.textContent =
+                selectedStation.name +
+                " could not be started.";
+        });
+
+    } else {
+
+        radioPlayer.pause();
+
+        playButton.textContent = "Play";
+
+        status.textContent =
+            selectedStation.name + " paused.";
+    }
+});
+
+/* ---------------------------------------------------------
+   Stop
+   --------------------------------------------------------- */
+
+stopButton.addEventListener("click", function() {
+
+    stopCurrentStream();
+
+    if (selectedStation) {
+
+        status.textContent =
+            selectedStation.name + " stopped.";
+
+    } else {
+
+        status.textContent = "Radio stopped.";
+    }
+});
+
+/* ---------------------------------------------------------
+   Mute / Unmute
+   --------------------------------------------------------- */
+
+muteButton.addEventListener("click", function() {
+
+    radioPlayer.muted = !radioPlayer.muted;
+
+    if (radioPlayer.muted) {
+
+        muteButton.textContent = "Unmute";
+        status.textContent = "Muted.";
+
+    } else {
+
+        muteButton.textContent = "Mute";
+        status.textContent = "Unmuted.";
+    }
+});
+
+/* ---------------------------------------------------------
+   Volume
+   --------------------------------------------------------- */
+
+volumeControl.addEventListener("input", function() {
+
+    const volume = Number(volumeControl.value);
+
+    radioPlayer.volume = volume / 100;
+
+    localStorage.setItem("radioVolume", volume);
+
+    if (volume === 0) {
+
+        radioPlayer.muted = true;
+        muteButton.textContent = "Unmute";
+
+        status.textContent =
+            "Muted. Volume 0 percent";
+
+    } else {
+
+        radioPlayer.muted = false;
+        muteButton.textContent = "Mute";
+
+        status.textContent =
+            "Volume " + volume + " percent";
+    }
+});
+
+/* ---------------------------------------------------------
+   Restore saved volume
+   --------------------------------------------------------- */
+
+const savedVolume = localStorage.getItem("radioVolume");
+
+if (savedVolume !== null) {
+
+    const volume = Number(savedVolume);
+
+    if (!Number.isNaN(volume)) {
+
+        volumeControl.value = volume;
+        radioPlayer.volume = volume / 100;
+
+        if (volume === 0) {
+
+            radioPlayer.muted = true;
+            muteButton.textContent = "Unmute";
+        }
+    }
+}
+
+/* ---------------------------------------------------------
+   Audio events
+   --------------------------------------------------------- */
+
+radioPlayer.addEventListener("playing", function() {
+
+    clearTimeout(connectionTimer);
+    connectionTimer = null;
+
+    playButton.textContent = "Pause";
+
+    if (activeStation) {
+
+        status.textContent =
+            activeStation.name + " is playing.";
+    }
+});
+
+radioPlayer.addEventListener("pause", function() {
+
+    playButton.textContent = "Play";
+});
+
+radioPlayer.addEventListener("waiting", function() {
+
+    if (activeStation) {
+
+        status.textContent =
+            activeStation.name +
+            " is buffering...";
+    }
+});
+
+radioPlayer.addEventListener("error", function() {
+
+    if (activeStation) {
+
+        status.textContent =
+            activeStation.name +
+            " is temporarily unavailable.";
+
+    }
+});
+
+/* ---------------------------------------------------------
+   Tested station selection
+   --------------------------------------------------------- */
+
+stationSelect.addEventListener("change", function() {
+
+    const value = stationSelect.value;
+
+    if (value === "") {
+
+        stopCurrentStream();
+        selectedStation = null;
+
+        showStationInfo(null);
+
+        return;
+    }
+
+    stopCurrentStream();
+    selectedStation = stations[Number(value)];
+
+    showStationInfo(selectedStation);
+
+    status.textContent =
+        selectedStation.name +
+        " selected. Press Play to start.";
+});
+
+/* ---------------------------------------------------------
+   Search Radio Browser
+   --------------------------------------------------------- */
+
+searchButton.addEventListener("click", searchRadioBrowser);
+
+searchName.addEventListener("keydown", function(event) {
+
+    if (event.key === "Enter") {
+
+        searchRadioBrowser();
+    }
+});
+
+async function searchRadioBrowser() {
+
+    const name = searchName.value.trim();
+
+    if (!name) {
+
+        searchResults.textContent =
+            "Please enter a station name.";
+
+        return;
+    }
+
+    searchResults.textContent =
+        "Searching for stations...";
+
+    try {
+
+        const url =
+            "https://de1.api.radio-browser.info/json/stations/search" +
+            "?name=" + encodeURIComponent(name) +
+            "&countrycode=IN" +
+            "&hidebroken=true" +
+            "&order=votes" +
+            "&limit=20";
+
+        const response = await fetch(url);
+
+        if (!response.ok) {
+
+            throw new Error("Search failed");
+        }
+
+        const results = await response.json();
+
+        searchStations = results;
+
+        displaySearchResults(results);
+
+    } catch (error) {
+
+        searchResults.textContent =
+            "The station search could not be completed.";
+    }
+}
+
+/* ---------------------------------------------------------
+   Display search results
+   --------------------------------------------------------- */
+
+function displaySearchResults(results) {
+
+    searchResults.innerHTML = "";
+
+    if (!results.length) {
+
+        searchResults.textContent =
+            "No stations were found.";
+
+        return;
+    }
+
+    const heading = document.createElement("p");
+
+    heading.textContent =
+        results.length +
+        " station result(s) found. Select a station to use it.";
+
+    searchResults.appendChild(heading);
+
+    results.forEach(function(station, index) {
+
+        const button = document.createElement("button");
+
+        button.type = "button";
+        button.className = "result-button";
+
+        button.textContent =
+            station.name || "Unnamed station";
+
+        button.addEventListener("click", function() {
+
+            const stream =
+                station.url_resolved || station.url;
+
+            if (!stream) {
+
+                status.textContent =
+                    "This station has no usable stream address.";
+
+                return;
+            }
+
+            stopCurrentStream();
+
+            selectedStation = {
+
+                name: station.name || "Unnamed station",
+                stream: stream,
+                state: station.state || "India",
+                codec: station.codec || "Not available",
+                bitrate: station.bitrate
+                    ? station.bitrate + " kbps"
+                    : "Not available",
+                source: "Radio Browser",
+                uuid: station.stationuuid || ""
+            };
+
+            stationSelect.value = "";
+
+            showStationInfo(selectedStation);
+
+            status.textContent =
+                selectedStation.name +
+                " selected from Radio Browser. Press Play to start.";
+        });
+
+        searchResults.appendChild(button);
+    });
+}
+
+/* ---------------------------------------------------------
+   Favourites
+   --------------------------------------------------------- */
+
+function loadFavourites() {
+
+    try {
+
+        const saved =
+            localStorage.getItem("radioFavourites");
+
+        favouriteStations =
+            saved ? JSON.parse(saved) : [];
+
+    } catch (error) {
+
+        favouriteStations = [];
+    }
+
+    displayFavourites();
+}
+
+function saveFavourites() {
+
+    localStorage.setItem(
+        "radioFavourites",
+        JSON.stringify(favouriteStations)
+    );
+}
+
+function displayFavourites() {
+
+    favourites.innerHTML = "";
+
+    const emptyOption = document.createElement("option");
+
+    emptyOption.value = "";
+    emptyOption.textContent =
+        favouriteStations.length
+            ? "-- Select a favourite --"
+            : "-- No favourites saved --";
+
+    favourites.appendChild(emptyOption);
+
+    favouriteStations.forEach(function(station, index) {
+
+        const option = document.createElement("option");
+
+        option.value = index;
+        option.textContent = station.name;
+
+        favourites.appendChild(option);
+    });
+}
+
+/* ---------------------------------------------------------
+   Add favourite
+   --------------------------------------------------------- */
+
+addFavouriteButton.addEventListener(
+    "click",
+    function() {
+
+        if (!selectedStation) {
+
+            status.textContent =
+                "Please select a station first.";
+
+            return;
+        }
+
+        const exists =
+            favouriteStations.some(function(station) {
+
+                return station.stream === selectedStation.stream;
+            });
+
+        if (exists) {
+
+            status.textContent =
+                selectedStation.name +
+                " is already in Favourites.";
+
+            return;
+        }
+
+        favouriteStations.push({
+            name: selectedStation.name,
+            stream: selectedStation.stream,
+            state: selectedStation.state || "",
+            codec: selectedStation.codec || "",
+            bitrate: selectedStation.bitrate || "",
+            source: selectedStation.source || "",
+            uuid: selectedStation.uuid || ""
+        });
+
+        saveFavourites();
+        displayFavourites();
+
+        status.textContent =
+            selectedStation.name +
+            " added to Favourites.";
+    }
+);
+
+/* ---------------------------------------------------------
+   Select favourite
+   --------------------------------------------------------- */
+
+favourites.addEventListener("change", function() {
+
+    const value = favourites.value;
+
+    if (value === "") {
+        return;
+    }
+
+    // Selecting a favourite is also a station change.
+    stopCurrentStream();
+    selectedStation =
+        favouriteStations[Number(value)];
+
+    showStationInfo(selectedStation);
+
+    status.textContent =
+        selectedStation.name +
+        " selected from Favourites. Press Play to start.";
+});
+
+/* ---------------------------------------------------------
+   Remove favourite
+   --------------------------------------------------------- */
+
+removeFavouriteButton.addEventListener(
+    "click",
+    function() {
+
+        const value = favourites.value;
+
+        if (value === "") {
+
+            status.textContent =
+                "Please select a favourite to remove.";
+
+            return;
+        }
+
+        const removed =
+            favouriteStations.splice(
+                Number(value),
+                1
+            )[0];
+
+        saveFavourites();
+        displayFavourites();
+
+        status.textContent =
+            removed.name +
+            " removed from Favourites.";
+    }
+);
+
+/* ---------------------------------------------------------
+   Initial setup
+   --------------------------------------------------------- */
+
+loadFavourites();
+
+radioPlayer.volume =
+    Number(volumeControl.value) / 100;
+
+</script>
+
+</body>
+</html>
