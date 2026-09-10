@@ -1,0 +1,73 @@
+body {
+    font-family: Arial, sans-serif;
+    line-height: 1.5;
+    margin: 20px;
+    max-width: 900px;
+}
+
+h1, h2 {
+    margin-bottom: 10px;
+}
+
+section {
+    margin-top: 24px;
+    padding-top: 10px;
+    border-top: 1px solid #999;
+}
+
+label {
+    display: block;
+    font-weight: bold;
+    margin-top: 12px;
+    margin-bottom: 5px;
+}
+
+select,
+input[type="text"],
+input[type="range"],
+button {
+    font-size: 1rem;
+}
+
+select,
+input[type="text"] {
+    width: 100%;
+    max-width: 600px;
+    padding: 8px;
+    box-sizing: border-box;
+}
+
+button {
+    padding: 9px 14px;
+    margin: 6px 6px 6px 0;
+    cursor: pointer;
+}
+
+input[type="range"] {
+    width: 100%;
+    max-width: 500px;
+}
+
+.control-group {
+    margin-top: 12px;
+}
+
+#status {
+    font-weight: bold;
+    margin-top: 12px;
+}
+
+#stationInfo,
+#searchResults,
+#favourites {
+    margin-top: 12px;
+}
+
+.result-button {
+    display: block;
+    margin-bottom: 6px;
+}
+
+.help {
+    max-width: 800px;
+}
