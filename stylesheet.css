@@ -80,3 +80,27 @@ input:focus,
     outline: 3px solid currentColor;
     outline-offset: 2px;
 }
+
+.station-combobox {
+    position: relative;
+    max-width: 40rem;
+}
+#stationCombo {
+    width: 100%;
+    box-sizing: border-box;
+}
+#stationOptions {
+    border: 1px solid currentColor;
+    background: Canvas;
+    color: CanvasText;
+    max-width: 40rem;
+    max-height: 16rem;
+    overflow-y: auto;
+}
+#stationOptions [role="option"] {
+    padding: 0.5rem;
+    cursor: pointer;
+}
+#stationOptions [aria-selected="true"] {
+    outline: 2px solid currentColor;
+}
