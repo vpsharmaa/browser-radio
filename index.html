@@ -1,14 +1,37 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Accessible Community Radio</title>
-    <link rel="stylesheet" type="text/css" href="./stylesheet.css" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Accessible Community Radio</title>
 
-    <!-- HLS.js is a JavaScript library used for HLS (.m3u8) streams -->
-    <script src="https://cdn.jsdelivr.net/npm/hls.js@1"></script>
+<link rel="stylesheet" href="Accessible_Community_Radio.css">
+<script src="https://cdn.jsdelivr.net/npm/hls.js@1"></script>
+<style>
+.station-combobox {
+    position: relative;
+    max-width: 40rem;
+}
+#stationCombo {
+    width: 100%;
+    box-sizing: border-box;
+}
+#stationOptions {
+    border: 1px solid currentColor;
+    background: Canvas;
+    color: CanvasText;
+    max-width: 40rem;
+    max-height: 16rem;
+    overflow-y: auto;
+}
+#stationOptions [role="option"] {
+    padding: 0.5rem;
+    cursor: pointer;
+}
+#stationOptions [aria-selected="true"] {
+    outline: 2px solid currentColor;
+}
+</style>
 </head>
 
 <body>
@@ -21,13 +44,38 @@
 </p>
 
 <section aria-labelledby="station-heading">
-    <h2 id="station-heading">Tested Stations</h2>
+    <h2 id="station-heading">Station</h2>
 
-    <label for="station">Select a station</label>
+    <label for="stationCombo">
+        Type a station name to search, or select a known station
+    </label>
 
-    <select id="station">
-        <option value="">-- Select a station --</option>
-    </select>
+    <div class="station-combobox">
+        <input
+            type="text"
+            id="stationCombo"
+            role="combobox"
+            aria-expanded="false"
+            aria-controls="stationOptions"
+            aria-autocomplete="list"
+            autocomplete="off"
+            placeholder="Type station name or choose from list"
+        >
+
+        <div
+            id="stationOptions"
+            role="listbox"
+            aria-label="Known stations"
+            hidden
+        ></div>
+    </div>
+
+    <p id="stationSearchHelp">
+        Type a station name and press Enter to search. Use Down Arrow to
+        choose a known station.
+    </p>
+
+    <div id="searchResults" aria-live="polite"></div>
 
     <div class="control-group">
         <button id="playButton" type="button">Play</button>
@@ -60,68 +108,74 @@
     </div>
 </section>
 
-<section aria-labelledby="search-heading">
-    <h2 id="search-heading">Search Internet Radio Stations</h2>
 
-    <label for="searchName">Station name</label>
 
-    <input
-        type="text"
-        id="searchName"
-        placeholder="Example: Aaj Tak"
+<section aria-labelledby="favourite-control-heading">
+    <h2 id="favourite-control-heading">Favourites</h2>
+
+    <button
+        id="favouriteButton"
+        type="button"
+        aria-expanded="false"
+        aria-controls="favouritePanel"
     >
+        Favourite Stations
+    </button>
 
-    <button id="searchButton" type="button">Search</button>
+    <div id="favouritePanel" hidden tabindex="-1">
+        <h3 id="favourite-panel-heading">Favourite Stations</h3>
 
-    <div id="searchResults" aria-live="polite"></div>
-</section>
+        <label for="favourites">Select a favourite station</label>
 
-<section aria-labelledby="favourite-heading">
-    <h2 id="favourite-heading">Favourite Stations</h2>
+        <select id="favourites">
+            <option value="">-- No favourites saved --</option>
+        </select>
 
-    <label for="favourites">Select a favourite station</label>
+        <div>
+            <button id="addFavouriteButton" type="button">
+                Add Current Station to Favourites
+            </button>
 
-    <select id="favourites">
-        <option value="">-- No favourites selected --</option>
-    </select>
+            <button id="removeFavouriteButton" type="button">
+                Remove Favourite
+            </button>
 
-    <div>
-        <button id="addFavouriteButton" type="button">
-            Add Current Station to Favourites
-        </button>
-
-        <button id="removeFavouriteButton" type="button">
-            Remove Favourite
-        </button>
+            <button id="closeFavouriteButton" type="button">
+                Back to Radio
+            </button>
+        </div>
     </div>
 </section>
 
-<section class="help" aria-labelledby="help-heading">
-    <h2 id="help-heading">How to Use This Radio</h2>
+<section aria-labelledby="help-control-heading">
+    <h2 id="help-control-heading">Help</h2>
+    <button id="helpButton" type="button" aria-expanded="false" aria-controls="helpText">
+        Help
+    </button>
 
-    <ol>
-        <li>Select a station from the Tested Stations list.</li>
-        <li>Press Play to start the station.</li>
-        <li>Press Play again to pause and resume playback.</li>
-        <li>Press Stop to completely stop the current stream.</li>
-        <li>Use Mute to mute or unmute the sound.</li>
-        <li>Use the Volume control to change the volume.</li>
-        <li>Search for additional stations by station name.</li>
-        <li>Add a selected station to Favourites for easier access later.</li>
-    </ol>
+    <div id="helpText" class="help" hidden tabindex="-1" aria-labelledby="help-heading">
+        <h2 id="help-heading">How to Use This Radio</h2>
 
-    <p>
-        Some Internet radio stations may occasionally be unavailable.
-        A station can also change or discontinue its streaming address.
-    </p>
+        <ol>
+            <li>Type a station name in the Station box and press Enter to search, or use Down Arrow to choose a known station.</li>
+            <li>Press Play to start the station.</li>
+            <li>Press Play again to pause and resume playback.</li>
+            <li>Press Stop to completely stop the current stream.</li>
+            <li>Use Mute to mute or unmute the sound.</li>
+            <li>Use the Volume control to change the volume.</li>
+            <li>Search for additional stations by typing part of a station name and pressing Enter.</li>
+            <li>Open Favourite Stations to select, add, or remove favourite stations.</li>
+        </ol>
+
+        <p>
+            Some Internet radio stations may occasionally be unavailable.
+            A station can also change or discontinue its streaming address.
+        </p>
+    </div>
 </section>
 
 <script>
 "use strict";
-
-/* ---------------------------------------------------------
-   Tested stations
-   --------------------------------------------------------- */
 
 const stations = [
     {
@@ -174,11 +228,8 @@ const stations = [
     }
 ];
 
-/* ---------------------------------------------------------
-   Page elements
-   --------------------------------------------------------- */
-
-const stationSelect = document.getElementById("station");
+const stationCombo = document.getElementById("stationCombo");
+const stationOptions = document.getElementById("stationOptions");
 const playButton = document.getElementById("playButton");
 const stopButton = document.getElementById("stopButton");
 const muteButton = document.getElementById("muteButton");
@@ -187,21 +238,23 @@ const volumeControl = document.getElementById("volumeControl");
 const radioPlayer = document.getElementById("radioPlayer");
 const status = document.getElementById("status");
 
-const searchName = document.getElementById("searchName");
-const searchButton = document.getElementById("searchButton");
 const searchResults = document.getElementById("searchResults");
 
+const favouriteButton =
+    document.getElementById("favouriteButton");
+const favouritePanel =
+    document.getElementById("favouritePanel");
 const favourites = document.getElementById("favourites");
 const addFavouriteButton =
     document.getElementById("addFavouriteButton");
 const removeFavouriteButton =
     document.getElementById("removeFavouriteButton");
+const closeFavouriteButton =
+    document.getElementById("closeFavouriteButton");
 
 const stationInfo = document.getElementById("stationInfo");
-
-/* ---------------------------------------------------------
-   Variables
-   --------------------------------------------------------- */
+const helpButton = document.getElementById("helpButton");
+const helpText = document.getElementById("helpText");
 
 let hls = null;
 let selectedStation = null;
@@ -211,23 +264,191 @@ let connectionTimer = null;
 let activeStation = null;
 let streamGeneration = 0;
 
-/* ---------------------------------------------------------
-   Populate tested stations
-   --------------------------------------------------------- */
+let highlightedKnownIndex = -1;
 
-stations.forEach(function(station, index) {
+function getKnownStationMatches() {
+    const term = stationCombo.value.trim().toLowerCase();
 
-    const option = document.createElement("option");
+    if (!term) {
+        return stations;
+    }
 
-    option.value = index;
-    option.textContent = station.name;
+    return stations.filter(function(station) {
+        return station.name.toLowerCase().includes(term);
+    });
+}
 
-    stationSelect.appendChild(option);
+function closeStationOptions() {
+    stationOptions.hidden = true;
+    stationCombo.setAttribute("aria-expanded", "false");
+    stationCombo.removeAttribute("aria-activedescendant");
+    highlightedKnownIndex = -1;
+}
+
+function openStationOptions() {
+    const matches = getKnownStationMatches();
+
+    stationOptions.innerHTML = "";
+    highlightedKnownIndex = -1;
+
+    matches.forEach(function(station, index) {
+        const option = document.createElement("div");
+
+        option.id = "known-station-" + index;
+        option.setAttribute("role", "option");
+        option.setAttribute("aria-selected", "false");
+        option.tabIndex = -1;
+        option.textContent = station.name;
+
+        option.addEventListener("mousedown", function(event) {
+            event.preventDefault();
+        });
+
+        option.addEventListener("click", function() {
+            selectKnownStation(station);
+        });
+
+        stationOptions.appendChild(option);
+    });
+
+    if (matches.length) {
+        stationOptions.hidden = false;
+        stationCombo.setAttribute("aria-expanded", "true");
+    } else {
+        closeStationOptions();
+    }
+}
+
+function selectKnownStation(station) {
+    stopCurrentStream();
+    selectedStation = station;
+    stationCombo.value = station.name;
+    closeStationOptions();
+
+    showStationInfo(selectedStation);
+
+    status.textContent =
+        selectedStation.name +
+        " selected. Press Play to start.";
+}
+
+function highlightKnownStation(index) {
+    const options = stationOptions.querySelectorAll('[role="option"]');
+
+    if (!options.length) {
+        return;
+    }
+
+    if (index < 0) {
+        index = options.length - 1;
+    }
+
+    if (index >= options.length) {
+        index = 0;
+    }
+
+    options.forEach(function(option, i) {
+        const selected = i === index;
+        option.setAttribute("aria-selected", String(selected));
+
+        if (selected) {
+            option.scrollIntoView({ block: "nearest" });
+        }
+    });
+
+    highlightedKnownIndex = index;
+    stationCombo.setAttribute(
+        "aria-activedescendant",
+        options[index].id
+    );
+}
+
+function selectExactKnownStation() {
+    const value = stationCombo.value.trim().toLowerCase();
+
+    if (!value) {
+        return false;
+    }
+
+    const match = stations.find(function(station) {
+        return station.name.toLowerCase() === value;
+    });
+
+    if (match) {
+        selectKnownStation(match);
+        return true;
+    }
+
+    return false;
+}
+
+stationCombo.addEventListener("focus", function() {
+    openStationOptions();
 });
 
-/* ---------------------------------------------------------
-   Station information
-   --------------------------------------------------------- */
+stationCombo.addEventListener("input", function() {
+    openStationOptions();
+});
+
+stationCombo.addEventListener("keydown", function(event) {
+
+    if (event.key === "ArrowDown") {
+        event.preventDefault();
+
+        if (stationOptions.hidden) {
+            openStationOptions();
+        }
+
+        highlightKnownStation(highlightedKnownIndex + 1);
+        return;
+    }
+
+    if (event.key === "ArrowUp") {
+        event.preventDefault();
+
+        if (stationOptions.hidden) {
+            openStationOptions();
+        }
+
+        highlightKnownStation(highlightedKnownIndex - 1);
+        return;
+    }
+
+    if (event.key === "Escape") {
+        if (!stationOptions.hidden) {
+            event.preventDefault();
+            closeStationOptions();
+        }
+        return;
+    }
+
+    if (event.key === "Enter") {
+        event.preventDefault();
+
+        const options = stationOptions.querySelectorAll('[role="option"]');
+
+        if (
+            highlightedKnownIndex >= 0 &&
+            highlightedKnownIndex < options.length
+        ) {
+            const matches = getKnownStationMatches();
+            selectKnownStation(matches[highlightedKnownIndex]);
+            return;
+        }
+
+        if (selectExactKnownStation()) {
+            return;
+        }
+
+        searchRadioBrowser();
+    }
+});
+
+stationCombo.addEventListener("blur", function() {
+    setTimeout(function() {
+        closeStationOptions();
+    }, 150);
+});
 
 function showStationInfo(station) {
 
@@ -258,10 +479,6 @@ function showStationInfo(station) {
         "</p>";
 }
 
-/* ---------------------------------------------------------
-   Small HTML escaping function
-   --------------------------------------------------------- */
-
 function escapeHtml(value) {
 
     return String(value)
@@ -271,10 +488,6 @@ function escapeHtml(value) {
         .replace(/"/g, "&quot;")
         .replace(/'/g, "&#039;");
 }
-
-/* ---------------------------------------------------------
-   Stop and clean the current stream
-   --------------------------------------------------------- */
 
 function stopCurrentStream() {
 
@@ -295,10 +508,6 @@ function stopCurrentStream() {
 
     playButton.textContent = "Play";
 }
-
-/* ---------------------------------------------------------
-   Start selected station
-   --------------------------------------------------------- */
 
 function startRadio() {
 
@@ -409,10 +618,6 @@ function startRadio() {
     }
 }
 
-/* ---------------------------------------------------------
-   Play / Pause
-   --------------------------------------------------------- */
-
 playButton.addEventListener("click", function() {
 
     if (!selectedStation || !selectedStation.stream) {
@@ -455,10 +660,6 @@ playButton.addEventListener("click", function() {
     }
 });
 
-/* ---------------------------------------------------------
-   Stop
-   --------------------------------------------------------- */
-
 stopButton.addEventListener("click", function() {
 
     stopCurrentStream();
@@ -473,10 +674,6 @@ stopButton.addEventListener("click", function() {
         status.textContent = "Radio stopped.";
     }
 });
-
-/* ---------------------------------------------------------
-   Mute / Unmute
-   --------------------------------------------------------- */
 
 muteButton.addEventListener("click", function() {
 
@@ -493,10 +690,6 @@ muteButton.addEventListener("click", function() {
         status.textContent = "Unmuted.";
     }
 });
-
-/* ---------------------------------------------------------
-   Volume
-   --------------------------------------------------------- */
 
 volumeControl.addEventListener("input", function() {
 
@@ -524,10 +717,6 @@ volumeControl.addEventListener("input", function() {
     }
 });
 
-/* ---------------------------------------------------------
-   Restore saved volume
-   --------------------------------------------------------- */
-
 const savedVolume = localStorage.getItem("radioVolume");
 
 if (savedVolume !== null) {
@@ -546,10 +735,6 @@ if (savedVolume !== null) {
         }
     }
 }
-
-/* ---------------------------------------------------------
-   Audio events
-   --------------------------------------------------------- */
 
 radioPlayer.addEventListener("playing", function() {
 
@@ -591,51 +776,10 @@ radioPlayer.addEventListener("error", function() {
     }
 });
 
-/* ---------------------------------------------------------
-   Tested station selection
-   --------------------------------------------------------- */
-
-stationSelect.addEventListener("change", function() {
-
-    const value = stationSelect.value;
-
-    if (value === "") {
-
-        stopCurrentStream();
-        selectedStation = null;
-
-        showStationInfo(null);
-
-        return;
-    }
-
-    stopCurrentStream();
-    selectedStation = stations[Number(value)];
-
-    showStationInfo(selectedStation);
-
-    status.textContent =
-        selectedStation.name +
-        " selected. Press Play to start.";
-});
-
-/* ---------------------------------------------------------
-   Search Radio Browser
-   --------------------------------------------------------- */
-
-searchButton.addEventListener("click", searchRadioBrowser);
-
-searchName.addEventListener("keydown", function(event) {
-
-    if (event.key === "Enter") {
-
-        searchRadioBrowser();
-    }
-});
 
 async function searchRadioBrowser() {
 
-    const name = searchName.value.trim();
+    const name = stationCombo.value.trim();
 
     if (!name) {
 
@@ -650,22 +794,44 @@ async function searchRadioBrowser() {
 
     try {
 
-        const url =
-            "https://de1.api.radio-browser.info/json/stations/search" +
-            "?name=" + encodeURIComponent(name) +
-            "&countrycode=IN" +
-            "&hidebroken=true" +
-            "&order=votes" +
-            "&limit=20";
+        async function fetchStations(countryOnly) {
 
-        const response = await fetch(url);
+            let url =
+                "https://de1.api.radio-browser.info/json/stations/search" +
+                "?name=" + encodeURIComponent(name) +
+                "&nameExact=false" +
+                "&hidebroken=true" +
+                "&order=votes" +
+                "&limit=20";
 
-        if (!response.ok) {
+            if (countryOnly) {
+                url += "&countrycode=IN";
+            }
 
-            throw new Error("Search failed");
+            const response = await fetch(url);
+
+            if (!response.ok) {
+                throw new Error("Search failed");
+            }
+
+            return await response.json();
         }
 
-        const results = await response.json();
+        let results = await fetchStations(true);
+
+        if (!results.length) {
+            results = await fetchStations(false);
+        }
+
+        
+        const searchTerm = name.toLowerCase();
+
+        results = results.filter(function(station) {
+            const stationName =
+                String(station.name || "").toLowerCase();
+
+            return stationName.includes(searchTerm);
+        });
 
         searchStations = results;
 
@@ -677,10 +843,6 @@ async function searchRadioBrowser() {
             "The station search could not be completed.";
     }
 }
-
-/* ---------------------------------------------------------
-   Display search results
-   --------------------------------------------------------- */
 
 function displaySearchResults(results) {
 
@@ -740,7 +902,7 @@ function displaySearchResults(results) {
                 uuid: station.stationuuid || ""
             };
 
-            stationSelect.value = "";
+            stationCombo.value = station.name || "";
 
             showStationInfo(selectedStation);
 
@@ -753,9 +915,43 @@ function displaySearchResults(results) {
     });
 }
 
-/* ---------------------------------------------------------
-   Favourites
-   --------------------------------------------------------- */
+function openFavouritePanel() {
+    favouritePanel.hidden = false;
+    favouriteButton.setAttribute("aria-expanded", "true");
+    status.textContent = "Favourite Stations opened.";
+    favouritePanel.focus();
+}
+
+function closeFavouritePanel() {
+    favouritePanel.hidden = true;
+    favouriteButton.setAttribute("aria-expanded", "false");
+    status.textContent = "Favourite Stations closed.";
+    favouriteButton.focus();
+}
+
+favouriteButton.addEventListener("click", function() {
+    if (favouritePanel.hidden) {
+        openFavouritePanel();
+    } else {
+        closeFavouritePanel();
+    }
+});
+
+closeFavouriteButton.addEventListener("click", function() {
+    closeFavouritePanel();
+});
+
+helpButton.addEventListener("click", function() {
+    const isHidden = helpText.hidden;
+    helpText.hidden = !isHidden;
+    helpButton.setAttribute("aria-expanded", String(isHidden));
+
+    if (isHidden) {
+        helpText.focus();
+    } else {
+        helpButton.focus();
+    }
+});
 
 function loadFavourites() {
 
@@ -808,10 +1004,6 @@ function displayFavourites() {
     });
 }
 
-/* ---------------------------------------------------------
-   Add favourite
-   --------------------------------------------------------- */
-
 addFavouriteButton.addEventListener(
     "click",
     function() {
@@ -858,10 +1050,6 @@ addFavouriteButton.addEventListener(
     }
 );
 
-/* ---------------------------------------------------------
-   Select favourite
-   --------------------------------------------------------- */
-
 favourites.addEventListener("change", function() {
 
     const value = favourites.value;
@@ -881,10 +1069,6 @@ favourites.addEventListener("change", function() {
         selectedStation.name +
         " selected from Favourites. Press Play to start.";
 });
-
-/* ---------------------------------------------------------
-   Remove favourite
-   --------------------------------------------------------- */
 
 removeFavouriteButton.addEventListener(
     "click",
@@ -914,10 +1098,6 @@ removeFavouriteButton.addEventListener(
             " removed from Favourites.";
     }
 );
-
-/* ---------------------------------------------------------
-   Initial setup
-   --------------------------------------------------------- */
 
 loadFavourites();
 
