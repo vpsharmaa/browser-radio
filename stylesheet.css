@@ -70,4 +70,13 @@ input[type="range"] {
 
 .help {
     max-width: 800px;
+    margin-top: 12px;
+}
+
+button:focus,
+select:focus,
+input:focus,
+.help:focus {
+    outline: 3px solid currentColor;
+    outline-offset: 2px;
 }
