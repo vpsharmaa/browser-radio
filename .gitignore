@@ -1,0 +1,9 @@
+node_modules/
+
+# Android signing keys and passwords
+
+*.jks
+*.keystore
+keystore.properties
+key.properties
+**/build/

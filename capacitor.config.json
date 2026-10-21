@@ -1,0 +1,8 @@
+{
+"appId": "in.sambhavnaa.radio",
+"appName": "Sambhavnaa Radio",
+"webDir": "Sambhavnaa Radio",
+"server": {
+"androidScheme": "https"
+}
+}

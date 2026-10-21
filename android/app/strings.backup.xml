@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">radio</string>
+    <string name="title_activity_main">radio</string>
+    <string name="package_name">in.sambhavnaa.radio</string>
+    <string name="custom_url_scheme">in.sambhavnaa.radio</string>
+</resources>
